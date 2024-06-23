@@ -19,7 +19,8 @@ class Client(sqlite3.Connection):
 
     def execute(self, sql, *params):
         self.log.info('execute: %s', self.compact(sql))
-        self.log.debug(' params: %s', params)
+        if params:
+            self.log.debug(' params: %s', params)
         return super().execute(sql, params)
 
     @classmethod

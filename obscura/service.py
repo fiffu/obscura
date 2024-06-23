@@ -4,18 +4,11 @@ from itertools import cycle
 import random
 import uuid
 
+from obscura import errors
 from obscura.logger import log
 from obscura.model import Record, Variant
 from obscura.process import PROCESS
 from obscura.repo import Repository
-
-
-class SlugExpiredError(ValueError):
-    pass
-
-
-class SlugNotFoundError(ValueError):
-    pass
 
 
 class Service:
@@ -39,11 +32,11 @@ class Service:
         now = datetime.now()
         is_valid = valid_since < now < now + timedelta(seconds=valid_secs)
         if not is_valid:
-            raise SlugExpiredError
+            raise errors.SlugInvalidTimeError(slug=slug, record_id=record_id, salt=salt)
 
         record = self.db.find(record_id, salt)
         if not record:
-            raise SlugNotFoundError
+            raise errors.SlugNotFoundError(slug=slug, record_id=record_id, salt=salt)
 
         return record
 

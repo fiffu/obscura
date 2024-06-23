@@ -3,11 +3,12 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, Response
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
+from obscura import errors
 from obscura.api import deps
 from obscura.logger import log
 from obscura.model import Variant
 from obscura.process import PROCESS
-from obscura.service import Service, SlugExpiredError, SlugNotFoundError
+from obscura.service import Service
 
 class Controller:
     def __init__(self, service: Service):
@@ -26,12 +27,12 @@ class Controller:
             try:
                 record = self.service.recover(slug)
                 return record.payload
-            except (SlugExpiredError, SlugNotFoundError) as err:
-                log.info("%s: %s", err.__class__.__name__, slug)
+            except errors.AppError as err:
+                log.info("%s, slug=%s meta=%s", err, slug, err.metadata)
                 return Response(status_code=404)
             except:
+                log.error("Uncaught error: %s, slug=%s", err, slug)
                 return Response(status_code=404)
-
 
         @router.post('/submit', dependencies=[Depends(deps.require_api_token)])
         def handle_submit(
