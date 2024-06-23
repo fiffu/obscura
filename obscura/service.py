@@ -51,7 +51,7 @@ class Service:
             slug = Slug.generate(record.salt, record.id, valid_since, valid_secs)
 
             validities.append({
-                'slug': slug,
+                'ref': slug,
                 'usable_after': valid_since.astimezone(timezone.utc),
                 'usable_duration_seconds': valid_secs,
             })

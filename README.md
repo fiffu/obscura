@@ -14,16 +14,33 @@ pipenv run tests
 ENV='development' DATABASE_URL='obscura.sqlite3' API_TOKEN='very-secret' python3 main.py
 ```
 
-```sh
-# Protect link to your Google form.
-# NOTE: x-api-token has to match $API_TOKEN provided when the app was started.
-# NOTE: "kind=gform-embed" currently doesn't do anything.
-curl -X POST 'http://127.0.0.1:8000/submit?kind=gform-embed&payload=https%3A%2F%2Fforms.google.com' -H 'x-api-token: very-secret'
-# Returns a JSON list of strings, for example:
-#   [ "VRcHWEZRVBZJUhddWF5QAh" ]
 
-# Fetch the protected link using one of the returned strings:
-curl 'https://127.0.0.1:8000/VRcHWEZRVBZJUhddWF5QAh'
-# Returns the protected payload, for example:
-#   https://forms.google.com
+### Protecting an embedded Google form
+
+```sh
+curl -X POST 'http://127.0.0.1:8000/submit?variant=gform-embed&payload=https%3A%2F%2Fforms.google.com' -H 'x-api-token: very-secret'
+# Returns a JSON list of references, for example:
+#   [
+#     {
+#       "ref": "UEVTVERQVUtQHUJ",
+#       "usable_after": "2024-06-23T09:06:36.357157+00:00",
+#       "usable_duration_seconds": 86400
+#     },
+#     {
+#       "ref": "UkRWVURTU0RSWA9",
+#       "usable_after": "2024-06-24T09:06:36.357157+00:00",
+#       "usable_duration_seconds": 86400
+#     },
+#   ]
+```
+- NOTE: x-api-token has to match `$API_TOKEN` provided when the app was started. 
+- NOTE: "kind=gform-embed" indicates an embedded Google form. Currently this is the onl 
+
+
+### Fetch the protected link using one of the references:
+
+```sh
+curl 'https://127.0.0.1:8000/UEVTVERQVUtQHUJ'
+# Returns the protected payload. Since we specified kind=gform-embed, the result will be a
+# HTML page that has the form embedded.
 ```
