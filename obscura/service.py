@@ -24,15 +24,15 @@ class Service:
     @staticmethod
     def now() -> datetime:
         return datetime.now()
-    
+
     @staticmethod
     def generate_id() -> str:
         return str(uuid.uuid4())
-    
+
     @staticmethod
     def generate_salt() -> str:
-        return str(uuid.uuid4())    
-        
+        return str(uuid.uuid4())
+
     def save(self, variant: Variant, payload: str) -> str:
         valid_since = self.now()
         valid_until = valid_since + timedelta(days=7)
@@ -54,11 +54,11 @@ class Service:
         is_valid = valid_since < now < valid_until
         if not is_valid:
             raise SlugExpiredError
-        
+
         record = self.db.find(record_id, salt)
         if not record:
             raise SlugNotFoundError
-        
+
         return record
 
     @staticmethod
@@ -69,7 +69,7 @@ class Service:
         if (n % 2) != 0:
             # Should provide an even number of validities here
             raise TypeError(f'expected even number of validities, got: {n}')
-        
+
         for i in range(0, n, 2):
             valid_since, valid_until = validities[i], validities[i+1]
             if valid_since > valid_until:
@@ -89,7 +89,7 @@ class Slug:
     @staticmethod
     def nonce() -> int:
         return int(random.randint(0, 1<<16))
-    
+
     @staticmethod
     def to_base64(b: bytes) -> str:
         return b64encode(b).decode()
@@ -101,7 +101,7 @@ class Slug:
     @staticmethod
     def parse_timestamp(ts: str) -> datetime:
         return datetime.fromtimestamp(float(ts))
-    
+
     @classmethod
     def xor(cls, bs: bytes) -> bytes:
         return bytes(
@@ -118,7 +118,7 @@ class Slug:
 
         crypt = cls.xor(clear_bytes)
         return cls.to_base64(crypt).strip('=')
-    
+
     @classmethod
     def parse(cls, slug: str):
         crypt = cls.from_base64(slug)
@@ -132,4 +132,4 @@ class Slug:
         valid_until = cls.parse_timestamp(valid_until)
 
         return record_id, salt, valid_since, valid_until
-    
+

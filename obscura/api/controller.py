@@ -24,9 +24,9 @@ class Controller:
                 record = self.service.recover(slug)
             except (SlugExpiredError, SlugNotFoundError):
                 raise HTTPException(status_code=404)
-            
+
             return record.payload
-        
+
         @router.post('/submit', dependencies=[Depends(deps.require_api_token)])
         def handle_submit(
             kind: Variant,
