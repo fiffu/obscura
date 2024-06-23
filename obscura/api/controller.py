@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
@@ -22,17 +24,18 @@ class Controller:
         def handle_slug(slug: str):
             try:
                 record = self.service.recover(slug)
+                return record.payload
             except (SlugExpiredError, SlugNotFoundError):
                 raise HTTPException(status_code=404)
 
-            return record.payload
 
         @router.post('/submit', dependencies=[Depends(deps.require_api_token)])
         def handle_submit(
             kind: Variant,
             payload: str,
         ):
-            slugs = self.service.save(kind, payload)
+            record = self.service.save(kind, payload)
+            slugs = self.service.generate_daily_slugs(record, 7)
             return slugs
 
         return router
