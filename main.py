@@ -5,7 +5,7 @@ from fastapi import FastAPI
 import uvicorn
 
 from obscura.api.controller import Controller
-from obscura.db import Database
+from obscura.repo import Repository
 from obscura.service import Service
 from obscura.logger import log, LOGGING_CONFIG
 from obscura.process import PROCESS
@@ -31,7 +31,7 @@ def build_app() -> FastAPI:
 
     return app
 
-def start_api(args: Args, db: Database):
+def start_api(args: Args, db: Repository):
     service = Service(db)
     ctrl = Controller(service)
 
@@ -42,7 +42,7 @@ def start_api(args: Args, db: Database):
 
 
 def main(args: Args):
-    db = Database(PROCESS.DATABASE_URL)
+    db = Repository(PROCESS.DATABASE_URL)
     start_api(args, db)
 
 

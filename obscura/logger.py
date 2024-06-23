@@ -3,10 +3,8 @@ from logging.config import dictConfig
 
 from obscura.process import PROCESS
 
-import uvicorn.config
 
-
-APP_LOGGER_NAME = 'obscura'
+APP_LOGGER_NAME = 'app'
 LEVEL = 'DEBUG' if PROCESS.ENV.is_dev else 'INFO'
 
 LOGGING_CONFIG = {
@@ -15,7 +13,7 @@ LOGGING_CONFIG = {
     'formatters': {
         "default": {
             '()': 'uvicorn.logging.DefaultFormatter',
-            'fmt': '%(levelprefix)s | %(asctime)s | %(message)s',
+            'fmt': '%(asctime)s | %(levelprefix)s | %(name)-15s | %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
     },
@@ -27,11 +25,16 @@ LOGGING_CONFIG = {
         },
     },
     'loggers': {
-        'obscura': {'level': LEVEL, 'handlers': ['default']},
-        'uvicorn.error': {'level': LEVEL, 'handlers': ['default']},
-        'uvicorn.access': {'level': 'INFO', 'handlers': ['default']},
+        APP_LOGGER_NAME: {'level': LEVEL, 'handlers': ['default']},
+        'uvicorn': {'level': LEVEL, 'handlers': ['default']},
     },
 }
 
 
+dictConfig(LOGGING_CONFIG)
 log = logging.getLogger(APP_LOGGER_NAME)
+
+def component_logger(component) -> logging.Logger:
+    # Append the component to our app, so it will inherit the app's logging config
+    name = f'{APP_LOGGER_NAME}.{component}'
+    return logging.getLogger(name)

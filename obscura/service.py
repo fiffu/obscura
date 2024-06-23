@@ -2,8 +2,9 @@ from base64 import b64decode, b64encode
 from datetime import datetime, timedelta
 from itertools import cycle
 import random
+import uuid
 
-from obscura.db import Database
+from obscura.repo import Repository
 from obscura.model import Record, Variant
 from obscura.process import PROCESS
 
@@ -17,23 +18,37 @@ class SlugNotFoundError(ValueError):
 
 
 class Service:
-    def __init__(self, db: Database) -> None:
+    def __init__(self, db: Repository) -> None:
         self.db = db
 
     @staticmethod
     def now() -> datetime:
         return datetime.now()
+    
+    @staticmethod
+    def generate_id() -> str:
+        return str(uuid.uuid4())
+    
+    @staticmethod
+    def generate_salt() -> str:
+        return str(uuid.uuid4())    
         
     def save(self, variant: Variant, payload: str) -> str:
         valid_since = self.now()
         valid_until = valid_since + timedelta(days=7)
 
-        record = self.db.save(variant, payload)
+        record = Record(
+            id=self.generate_id(),
+            variant=variant,
+            payload=payload,
+            salt=self.generate_salt(),
+        )
+
+        self.db.save(record)
         return self.generate_slugs(record, valid_since, valid_until)
 
-
     def recover(self, slug: str) -> Record:
-        salt, record_id, valid_since, valid_until = Slug.parse(slug)
+        record_id, salt, valid_since, valid_until = Slug.parse(slug)
 
         now = self.now()
         is_valid = valid_since < now < valid_until
@@ -46,8 +61,6 @@ class Service:
         
         return record
 
-
-    
     @staticmethod
     def generate_slugs(record: Record, *validities: datetime):
         slugs = []
@@ -113,11 +126,10 @@ class Slug:
         clear_bytes = cls.xor(crypt)
         clear = clear_bytes.decode(cls.STRING_CODEC)
         fields = clear.split(cls.STRING_DELIM)
-        print(fields)
 
         salt, record_id, valid_since, valid_until, _ = fields
         valid_since = cls.parse_timestamp(valid_since)
         valid_until = cls.parse_timestamp(valid_until)
 
-        return salt, record_id, valid_since, valid_until
+        return record_id, salt, valid_since, valid_until
     

@@ -11,7 +11,7 @@ pipenv install
 pipenv run tests
 
 # Start app
-ENV='development' DATABASE_URL='dsn://...' API_TOKEN='very-secret' python3 main.py
+ENV='development' DATABASE_URL='obscura.sqlite3' API_TOKEN='very-secret' python3 main.py
 ```
 
 ```sh

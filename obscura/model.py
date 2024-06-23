@@ -9,5 +9,5 @@ class Variant(str, Enum):
 class Record:
     id: str
     salt: str
-    variant: str
+    variant: Variant
     payload: str
